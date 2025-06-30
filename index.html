@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PiTasker - Earn Pi for Tasks</title>
+    <!-- Pi SDK MUST be loaded first -->
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+    <script>
+        // Critical sandbox setup (must come before any Pi calls)
+        window.Pi = { sandbox: true }; // Force sandbox mode
+        
+        // Initialize Pi SDK after DOM loads
+        document.addEventListener('DOMContentLoaded', function() {
+            Pi.init({
+                version: "2.0",
+                onReady: function() {
+                    console.log("Pi SDK ready in sandbox mode!");
+                    document.getElementById('pi-auth-button').style.display = 'block';
+                }
+            });
+        });
+    </script>
+    <style>
+        #pi-auth-button { display: none; margin: 20px; padding: 10px; background: #F7931A; color: white; border: none; border-radius: 5px; }
+        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
+    </style>
+</head>
+<body>
+    <h1>PiTasker Sandbox</h1>
+    <p>Test task platform for Pi Network</p>
+    
+    <!-- Sandbox Test Button -->
+    <button id="pi-auth-button" onclick="Pi.authenticate(['username','payments'], onAuth)">
+        Connect Pi Wallet (Sandbox)
+    </button>
+
+    <script>
+        // Authentication callback
+        function onAuth(auth) {
+            console.log("Auth successful!", auth);
+            alert(`Connected to Pi Wallet!\nUser: ${auth.user.username}\nSandbox: ${Pi.sandbox}`);
+        }
+        
+        // Debug output
+        console.log("Current Pi config:", window.Pi);
+    </script>
+</body>
+</html>
