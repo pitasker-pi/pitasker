@@ -108,6 +108,11 @@ let currentAvailableTasks = [];
 // Array to store accepted tasks (filtered from allTasksData based on status)
 let acceptedTasks = [];
 
+// --- Global DOM Elements for Pi Integration ---
+let piPayButton;
+let piPaymentStatus;
+let isAuthenticated = false; // Flag to check if user is authenticated with Pi
+
 // --- Functions to Manage Tasks Display ---
 
 function displayAvailableTasks() {
@@ -301,6 +306,7 @@ function filterTasks() {
 }
 
 // Simple alert function (used for Pi Connect button)
+// We will repurpose this or integrate directly with the new Pi Payment functionality
 function showAlert(message) {
     alert(message);
 }
@@ -333,8 +339,125 @@ function loadTasksFromLocalStorage() {
 // --- Initialize App ---
 // This runs when the DOM (HTML structure) is fully loaded
 document.addEventListener('DOMContentLoaded', () => {
-    loadTasksFromLocalStorage(); // Load any previously saved tasks
-    displayAvailableTasks(); // Display available tasks
-    displayAcceptedTasks(); // Display accepted tasks (will be empty if none loaded)
+    // --- Pi SDK Integration Start ---
+    piPayButton = document.getElementById('payPiButton');
+    piPaymentStatus = document.getElementById('paymentStatus');
+
+    if (!piPayButton || !piPaymentStatus) {
+        console.error("Critical: Missing Pi payment button or status element in HTML. Pi integration will not work.");
+        // We'll proceed with the rest of the app, but Pi features will be disabled or not work.
+    } else {
+        try {
+            // PI APP ID KUKA BANI!
+            Pi.init({ appId: "njocinapbollg8f925qksyexa6brsk4n7gja6iw74rxluu7m1rendh8y37pffqyo", version: "2.0" });
+            console.log("Pi SDK Initialized with App ID.");
+            piPaymentStatus.textContent = "Pi SDK Ready. Click button to Authenticate & Pay.";
+            piPayButton.addEventListener('click', authenticateAndPay); // Haɗa aikin zuwa maɓallin
+        } catch (error) {
+            console.error("Failed to initialize Pi SDK:", error);
+            piPaymentStatus.textContent = "Error initializing Pi SDK. Please ensure you are in Pi Browser and check console for details.";
+            if (piPayButton) piPayButton.disabled = true; // Kashe button idan akwai matsala
+        }
+    }
+
+    // Aikin da zai fara Authentication sannan ya yi biyan kuɗi
+    async function authenticateAndPay() {
+        if (!piPayButton || !piPaymentStatus) {
+            console.error("Pi elements not found, cannot proceed with authentication.");
+            return;
+        }
+
+        if (isAuthenticated) {
+            // Idan an riga an shiga, kai tsaye zai yi biyan kuɗi
+            initiatePiPayment();
+            return;
+        }
+
+        try {
+            piPaymentStatus.textContent = "Authenticating with Pi Network...";
+            piPayButton.disabled = true; // Kashe button yayin authentication
+
+            // Nemi izini don username da payments
+            const authResult = await Pi.authenticate(['username', 'payments']);
+
+            isAuthenticated = true;
+            console.log("Authentication successful:", authResult);
+            piPaymentStatus.textContent = `Authenticated as: ${authResult.user.username}. Ready to pay.`;
+            piPayButton.textContent = "Pay 0.0001 Pi (Test)"; // Canza rubutun button
+
+            // Yanzu yi biyan kuɗi
+            initiatePiPayment();
+
+        } catch (error) {
+            console.error("Authentication failed:", error);
+            piPaymentStatus.textContent = `Authentication failed: ${error.message}. Please ensure you are logged into Pi Browser.`;
+            alert(`Authentication failed: ${error.message}. Please ensure you are logged into Pi Browser.`);
+            if (piPayButton) piPayButton.disabled = false; // Kunna button a sake
+        }
+    }
+
+    // Aikin da zai fara biyan kuɗi
+    function initiatePiPayment() {
+        if (!piPayButton || !piPaymentStatus) {
+            console.error("Pi elements not found, cannot proceed with payment.");
+            return;
+        }
+
+        piPaymentStatus.textContent = "Initiating payment...";
+        piPayButton.disabled = true; // Kashe button yayin biya
+
+        const amountToPay = 0.0001; // Karamin adadi don gwaji (Test-Pi)
+
+        Pi.sendPayment({
+            amount: amountToPay,
+            memo: "Test transaction for PiTasker App verification (Step 11)", // Dalilin biya
+            metadata: {
+                purpose: "App Verification Step 11",
+                app: "PiTasker"
+            }
+        }, {
+            onReadyForServerApproval: function(paymentId) {
+                // WANNAN SHINE MAGANIN CLIENT-SIDE APPROVAL DOMIN GWADUWA.
+                // KADA KA YI AMFANI DA WANNAN A AIKI NA HAKIKA (PRODUCTION)!
+                // Yana sanar da Pi Network cewa an yarda da biyan daga gefen client.
+                piPaymentStatus.textContent = `Payment ${paymentId} ready for client approval. Completing...`;
+                console.log(`Payment ${paymentId} ready for client approval. Confirming via client-side.`);
+                Pi.complete(paymentId); // Wannan shine kiran da zai kammala biyan kuɗi a Pi blockchain
+            },
+            onComplete: function(paymentId) {
+                piPaymentStatus.textContent = `Payment ${paymentId} successful! You can now go back to Pi Developer App.`;
+                alert("Payment successful! You can now go back to the Pi Developer App and click 'Verify' for Step 11.");
+                console.log("Payment successful:", paymentId);
+                if (piPayButton) piPayButton.disabled = false; // Kunna button a sake
+            },
+            onIncomplete: function(paymentId) {
+                piPaymentStatus.textContent = `Payment ${paymentId} incomplete. Check Pi wallet.`;
+                alert("Payment incomplete. Please check your Pi wallet or network connection.");
+                console.warn("Payment incomplete:", paymentId);
+                if (piPayButton) piPayButton.disabled = false; // Kunna button a sake
+            },
+            onCancel: function() {
+                piPaymentStatus.textContent = "Payment canceled by user.";
+                alert("Payment canceled by user.");
+                console.log("Payment canceled by user.");
+                if (piPayButton) piPayButton.disabled = false; // Kunna button a sake
+            }
+        });
+    }
+    // --- Pi SDK Integration End ---
+
+
+    // Load tasks and display them
+    loadTasksFromLocalStorage();
+    displayAvailableTasks();
+    displayAcceptedTasks();
     showSection('available-tasks'); // Ensure 'Available Tasks' tab is active by default
 });
+
+// Expose functions globally if they are called directly from HTML (e.g., onclick)
+window.showSection = showSection;
+window.acceptTask = acceptTask;
+window.submitTask = submitTask;
+window.filterTasks = filterTasks;
+// Note: showAlert is now mostly replaced by Pi status messages, but keeping for compatibility.
+window.showAlert = showAlert;
