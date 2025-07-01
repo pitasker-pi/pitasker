@@ -1,0 +1,268 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f2f5; /* Light grey background */
+    color: #333; /* Dark grey for text */
+}
+
+header {
+    background-color: #B8860B; /* Golden/Orange-Brown from logo */
+    color: white;
+    padding: 1em 0;
+    text-align: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.pi-logo {
+    width: 80px; /* Adjust size as needed */
+    height: auto;
+    margin-bottom: 10px;
+}
+
+header h1 {
+    /* Removed or hidden if replaced by logo */
+    display: none; /* Hide the h1 text now that we have a logo */
+}
+
+header p {
+    font-size: 1.1em;
+}
+
+main {
+    padding: 20px;
+    max-width: 900px;
+    margin: 20px auto;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+section {
+    margin-bottom: 30px;
+}
+
+h2 {
+    color: #B8860B; /* Golden/Orange-Brown for section titles */
+    border-bottom: 2px solid #eee;
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+/* Tab Navigation Styles */
+.tabs {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #eee;
+}
+
+.tab-button {
+    background-color: #f8f8f8;
+    color: #B8860B; /* Golden/Orange-Brown */
+    border: 1px solid #DAA520; /* Slightly darker gold border */
+    padding: 10px 20px;
+    border-radius: 5px 5px 0 0;
+    cursor: pointer;
+    font-size: 1em;
+    transition: all 0.3s ease;
+    margin: 0 2px; /* Small space between buttons */
+}
+
+.tab-button:hover {
+    background-color: #FFEFD5; /* Light peach/gold for hover */
+}
+
+.tab-button.active {
+    background-color: #B8860B; /* Golden/Orange-Brown for active tab */
+    color: white;
+    border-color: #B8860B;
+    border-bottom: none; /* Remove bottom border for active tab */
+    font-weight: bold;
+}
+
+/* Section visibility styles */
+.hidden-section {
+    display: none;
+}
+
+.active-section {
+    display: block;
+}
+
+/* Search Bar Styles */
+.search-container {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+#task-search {
+    width: calc(100% - 40px); /* Adjust width to make space for icon */
+    padding: 10px 15px;
+    padding-right: 40px; /* Space for icon */
+    border: 1px solid #DAA520;
+    border-radius: 5px;
+    font-size: 1em;
+}
+
+.search-icon {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #B8860B;
+    font-size: 1.2em;
+}
+
+
+.task-card {
+    background-color: #FFFACD; /* Lemon Chiffon - very light yellow/gold for task card background */
+    border: 1px solid #DAA520; /* Golden border */
+    border-radius: 8px;
+    padding: 15px;
+    margin-bottom: 15px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease-in-out; /* Added for hover effect */
+}
+
+.task-card:hover {
+    transform: translateY(-5px); /* Lift card slightly on hover */
+}
+
+.task-card h3 {
+    color: #8B4513; /* Saddle Brown - darker brown for task titles */
+    margin-top: 0;
+    font-size: 1.3em;
+}
+
+.task-card p {
+    margin: 5px 0;
+    line-height: 1.5;
+}
+
+.task-card strong {
+    color: #28a745; /* Green for Pi reward text - keeping green for rewards */
+    font-size: 1.1em;
+}
+
+/* Styles for task metadata */
+.task-meta {
+    font-size: 0.9em;
+    color: #666;
+    margin-bottom: 10px;
+}
+
+.task-meta span {
+    margin-right: 15px;
+    display: inline-block;
+}
+
+/* Icons within task meta */
+.task-meta span i {
+    margin-right: 5px;
+    color: #DAA520; /* Golden color for icons */
+}
+
+/* Pi reward icon */
+.task-card strong i {
+    margin-right: 5px;
+    color: #28a745; /* Green color for Pi icon */
+}
+
+button {
+    background-color: #B8860B; /* Golden/Orange-Brown for buttons */
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1em;
+    transition: background-color 0.3s ease, transform 0.2s ease; /* Added for hover effect */
+}
+
+button:hover {
+    background-color: #DAA520; /* Darker gold on hover */
+    transform: translateY(-2px); /* Slight lift on hover */
+}
+
+button:disabled {
+    background-color: #cccccc; /* Grey out disabled buttons */
+    cursor: not-allowed;
+}
+
+.pi-connect-button {
+    background-color: #FF4500; /* OrangeRed - a striking orange for Pi Connect */
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 1.1em;
+    transition: background-color 0.3s ease;
+}
+
+.pi-connect-button:hover {
+    background-color: #CD3700; /* Darker OrangeRed */
+}
+
+
+#how-it-works ul {
+    list-style-type: disc;
+    margin-left: 20px;
+    line-height: 1.6;
+}
+
+/* Styles for Terms of Service and Privacy Policy sections */
+#terms-of-service, #privacy-policy {
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+    margin-top: 20px;
+}
+
+#terms-of-service h3, #privacy-policy h3 {
+    color: #8B4513; /* Saddle Brown for sub-headings */
+    margin-top: 25px;
+    margin-bottom: 10px;
+    border-bottom: 1px dashed #eee; /* Light dashed underline */
+    padding-bottom: 5px;
+}
+
+#terms-of-service p, #privacy-policy p,
+#terms-of-service ul, #privacy-policy ul {
+    font-size: 0.95em;
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+#terms-of-service ul, #privacy-policy ul {
+    list-style-type: decimal; /* Numbered lists for policy points */
+    margin-left: 25px;
+}
+
+
+footer {
+    text-align: center;
+    padding: 20px;
+    margin-top: 30px;
+    background-color: #333; /* Dark background for footer */
+    color: white;
+    font-size: 0.9em;
+}
+
+.footer-links {
+    margin-top: 10px;
+}
+
+.footer-links a {
+    color: #DAA520; /* Golden color for footer links */
+    text-decoration: none;
+    margin: 0 10px;
+    transition: color 0.3s ease;
+}
+
+.footer-links a:hover {
+    color: #FFEFD5; /* Lighter gold on hover */
+    text-decoration: underline;
+}
