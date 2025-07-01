@@ -42,7 +42,7 @@ let allTasksData = [
     },
     {
         id: 'task005',
-        title: 'Translate a Short Pi Article (Hausa)',
+        title: 'Translate a Short Pi Article in to your local language ()',
         description: 'Translate a short article about Pi Network into Hausa (approx. 500 words).',
         reward: 0.7,
         currency: 'Pi',
@@ -53,8 +53,8 @@ let allTasksData = [
     {
         id: 'task006',
         title: 'Test Pi Browser Feature',
-        description: 'Spend 15 minutes navigating a new feature in the Pi Browser and report bugs.',
-        reward: 0.4,
+        description: 'Spend 15 minutes navigating a new feature in the Pi Browser and report a bugs.',
+        reward: 0.40,
         currency: 'Pi',
         duration: '15 min',
         category: 'Bug Testing',
