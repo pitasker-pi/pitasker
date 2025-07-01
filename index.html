@@ -6,6 +6,7 @@
     <title>PiTasker - Do Tasks, Earn Pi reward!</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
 </head>
 <body>
     <header>
@@ -44,7 +45,9 @@
                 <li>Submit and get your task verified.</li>
                 <li>Receive your Pi rewards directly to your wallet!</li>
             </ul>
-            <button class="pi-connect-button" onclick="showAlert('This is where Pi Wallet integration will go!')">Connect Pi Wallet</button>
+            <h3>Verify App Connectivity (Step 11)</h3>
+            <button class="pi-connect-button" id="payPiButton">Authenticate & Pay 0.0001 Pi (Test)</button>
+            <p id="paymentStatus" style="margin-top: 10px; font-weight: bold; color: #333;"></p>
         </section>
 
         <section id="terms-of-service" class="hidden-section">
