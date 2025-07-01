@@ -3,47 +3,137 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PiTasker - Earn Pi for Tasks</title>
-    <!-- Pi SDK MUST be loaded first -->
-    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
-    <script>
-        // Critical sandbox setup (must come before any Pi calls)
-        window.Pi = { sandbox: true }; // Force sandbox mode
-        
-        // Initialize Pi SDK after DOM loads
-        document.addEventListener('DOMContentLoaded', function() {
-            Pi.init({
-                version: "2.0",
-                onReady: function() {
-                    console.log("Pi SDK ready in sandbox mode!");
-                    document.getElementById('pi-auth-button').style.display = 'block';
-                }
-            });
-        });
-    </script>
-    <style>
-        #pi-auth-button { display: none; margin: 20px; padding: 10px; background: #F7931A; color: white; border: none; border-radius: 5px; }
-        body { font-family: Arial, sans-serif; text-align: center; padding: 20px; }
-    </style>
+    <title>PiTasker - Do Tasks, Earn Pi!</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <h1>PiTasker Sandbox</h1>
-    <p>Test task platform for Pi Network</p>
-    
-    <!-- Sandbox Test Button -->
-    <button id="pi-auth-button" onclick="Pi.authenticate(['username','payments'], onAuth)">
-        Connect Pi Wallet (Sandbox)
-    </button>
+    <header>
+        <img src="pi_logo.png" alt="Pi Network Logo" class="pi-logo">
+        <p>Complete simple tasks and earn Pi rewards!</p>
+    </header>
 
-    <script>
-        // Authentication callback
-        function onAuth(auth) {
-            console.log("Auth successful!", auth);
-            alert(`Connected to Pi Wallet!\nUser: ${auth.user.username}\nSandbox: ${Pi.sandbox}`);
-        }
-        
-        // Debug output
-        console.log("Current Pi config:", window.Pi);
-    </script>
+    <main>
+        <nav class="tabs">
+            <button class="tab-button active" onclick="showSection('available-tasks')">Available Tasks</button>
+            <button class="tab-button" onclick="showSection('my-tasks')">My Accepted Tasks</button>
+        </nav>
+
+        <section id="available-tasks" class="active-section">
+            <h2>Available Tasks</h2>
+            <div class="search-container">
+                <input type="text" id="task-search" placeholder="Search tasks by title or description..." onkeyup="filterTasks()">
+                <i class="fas fa-search search-icon"></i>
+            </div>
+            <div id="available-tasks-list">
+                </div>
+        </section>
+
+        <section id="my-tasks" class="hidden-section">
+            <h2>My Accepted Tasks</h2>
+            <div id="accepted-tasks-list">
+                <p>You haven't accepted any tasks yet.</p>
+            </div>
+        </section>
+
+        <section id="how-it-works">
+            <h2>How It Works</h2>
+            <ul>
+                <li>Choose a task you want to complete.</li>
+                <li>Follow the instructions and complete the task.</li>
+                <li>Submit and get your task verified.</li>
+                <li>Receive your Pi rewards directly to your wallet!</li>
+            </ul>
+            <button class="pi-connect-button" onclick="showAlert('This is where Pi Wallet integration will go!')">Connect Pi Wallet</button>
+        </section>
+
+        <section id="terms-of-service" class="hidden-section">
+            <h2>Terms of Service</h2>
+            <h3>1. Acceptance of Terms</h3>
+            <p>By accessing and using the PiTasker application ("App"), you agree to be bound by these Terms of Service ("Terms"). If you do not agree to these Terms, you may not use the App.</p>
+
+            <h3>2. Services Provided</h3>
+            <p>PiTasker connects users ("Pioneers") with various digital tasks. Completion of these tasks may result in rewards, often in the form of Pi cryptocurrency, subject to verification and the terms specified for each task.</p>
+
+            <h3>3. User Conduct</h3>
+            <ul>
+                <li>You agree to perform tasks truthfully and accurately.</li>
+                <li>Any fraudulent activity, misrepresentation, or attempt to exploit the App will result in immediate termination of your account and forfeiture of any accumulated rewards.</li>
+                <li>You are responsible for maintaining the confidentiality of your account information.</li>
+            </ul>
+
+            <h3>4. Rewards and Payments</h3>
+            <ul>
+                <li>Rewards are granted upon successful verification of task completion, as determined solely by PiTasker.</li>
+                <li>Reward values are subject to change.</li>
+                <li>PiTasker is not responsible for any issues related to the Pi Network or its blockchain, including wallet functionality or transaction delays.</li>
+            </ul>
+
+            <h3>5. Disclaimers</h3>
+            <p>The App is provided "as is" without any warranties, express or implied. PiTasker does not guarantee the availability of tasks or specific reward amounts.</p>
+
+            <h3>6. Limitation of Liability</h3>
+            <p>PiTasker shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising out of your use of or inability to use the App.</p>
+
+            <h3>7. Changes to Terms</h3>
+            <p>PiTasker reserves the right to modify these Terms at any time. Your continued use of the App after such modifications constitutes your acceptance of the new Terms.</p>
+
+            <h3>8. Governing Law</h3>
+            <p>These Terms shall be governed by and construed in accordance with the laws of [Your Country/State, e.g., Nigeria, Taraba State].</p>
+        </section>
+
+        <section id="privacy-policy" class="hidden-section">
+            <h2>Privacy Policy</h2>
+            <h3>1. Information We Collect</h3>
+            <p>PiTasker collects minimal information necessary for the operation of the App:</p>
+            <ul>
+                <li>**Task Activity Data:** Information about tasks you accept, submit, and complete (e.g., task ID, status, timestamps).</li>
+                <li>**Device Information:** Basic device type and operating system (for compatibility and analytics).</li>
+                <li>**No Personal Identifiable Information (PII):** PiTasker currently does not directly collect your name, email address, phone number, or other personal data that can identify you directly. Any connection to your Pi Network identity would be handled securely via the Pi SDK, not directly by this App.</li>
+            </ul>
+
+            <h3>2. How We Use Your Information</h3>
+            <p>We use the collected information to:</p>
+            <ul>
+                <li>Enable task acceptance and tracking.</li>
+                <li>Improve App functionality and user experience.</li>
+                <li>Perform basic analytics on task engagement.</li>
+            </ul>
+
+            <h3>3. Data Storage</h3>
+            <p>Task activity data is stored locally on your device using your browser's Local Storage. This data is not transmitted to any external server by this App.</p>
+
+            <h3>4. Data Sharing and Disclosure</h3>
+            <p>PiTasker does not share or sell your data with third parties. As no PII is collected by the App directly, there is no personal data to share.</p>
+
+            <h3>5. Third-Party Services</h3>
+            <p>This App may link to or integrate with third-party services (e.g., Pi Network blockchain, Font Awesome for icons). Your use of those services is subject to their respective terms and privacy policies.</p>
+
+            <h3>6. Your Choices</h3>
+            <p>Since data is stored locally, you can clear this data by clearing your browser's or app's local storage/cache. This will reset your accepted tasks.</p>
+
+            <h3>7. Security</h3>
+            <p>We implement reasonable measures to protect the data stored locally on your device, but no local storage method is 100% secure against all threats.</p>
+
+            <h3>8. Children's Privacy</h3>
+            <p>PiTasker is not intended for use by children under the age of 13. We do not knowingly collect information from children under 13.</p>
+
+            <h3>9. Changes to this Privacy Policy</h3>
+            <p>We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page.</p>
+
+            <h3>10. Contact Us</h3>
+            <p>If you have any questions about this Privacy Policy, please contact us at [Your Contact Email Address, e.g., pitasker.support@example.com].</p>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2025 PiTasker. All Rights Reserved.</p>
+        <div class="footer-links">
+            <a href="#" onclick="showSection('terms-of-service'); return false;">Terms of Service</a> |
+            <a href="#" onclick="showSection('privacy-policy'); return false;">Privacy Policy</a>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
 </body>
 </html>
