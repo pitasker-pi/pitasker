@@ -3,7 +3,8 @@ const app = express();
 const port = 3000;
 
 // Firebase Admin SDK import and initialization
-// Make sure to replace "./serviceAccountKey.json" with the correct path to your service account key file.
+// Ensure "./serviceAccountKey.json" points to your actual service account key file.
+// This file should be kept secure and NOT pushed to public repositories.
 var admin = require("firebase-admin");
 var serviceAccount = require("./serviceAccountKey.json");
 
@@ -11,12 +12,12 @@ admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
 
-// Middleware to parse JSON data from the request body.
-// This is crucial for handling incoming JSON payloads from clients.
+// Middleware to parse incoming JSON data from request bodies.
+// This is essential for your API to correctly read JSON payloads sent by clients.
 app.use(express.json());
 
 // API endpoint for handling transactions.
-// This route will listen for POST requests to '/transaction'.
+// This route listens for POST requests to '/transaction'.
 app.post('/transaction', (req, res) => {
   // Extract the transaction data sent in the request body.
   const transactionData = req.body;
@@ -24,8 +25,8 @@ app.post('/transaction', (req, res) => {
   console.log('Transaction received:', transactionData);
 
   // --- Firebase Admin SDK Usage Example (Uncomment and modify as needed) ---
-  // Here's where you would integrate your actual Firebase logic,
-  // for example, saving the transaction data to Firestore or Realtime Database.
+  // This is where you would implement your actual logic for saving data to Firebase.
+  // For example, you can save the 'transactionData' to a Firestore collection.
 
   /*
   admin.firestore().collection('transactions').add(transactionData)
@@ -39,12 +40,12 @@ app.post('/transaction', (req, res) => {
     });
   */
 
-  // For demonstration, we'll just send a success message back.
-  // If you uncomment the Firebase logic above, make sure to remove or adjust this line.
-  res.json({ message: 'Transaction received!', data: transactionData });
+  // For demonstration purposes, we'll just send a success message.
+  // If you uncomment and use the Firebase logic above, remember to adjust or remove this line.
+  res.json({ message: 'Transaction received successfully!', data: transactionData });
 });
 
-// The server starts listening for incoming requests on the specified port.
+// Start the server and listen for incoming requests on the specified port.
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
   console.log('You can now send POST requests to http://localhost:3000/transaction');
