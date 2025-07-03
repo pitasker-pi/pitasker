@@ -24,25 +24,23 @@ app.post('/transaction', (req, res) => {
 
   console.log('Transaction received:', transactionData);
 
-  // --- Firebase Admin SDK Usage Example (Uncomment and modify as needed) ---
-  // This is where you would implement your actual logic for saving data to Firebase.
-  // For example, you can save the 'transactionData' to a Firestore collection.
+  // --- Firebase Admin SDK: Saving Transaction to Firestore ---
+  // The code below has been uncommented to enable saving transactionData to Firestore.
+  // Make sure your Firestore rules and Service Account permissions allow write operations
+  // to the 'transactions' collection.
 
-  /*
   admin.firestore().collection('transactions').add(transactionData)
     .then(() => {
       console.log('Transaction saved to Firestore successfully!');
+      // Send a success response back to the client after saving.
       res.json({ message: 'Transaction successfully processed and saved!', data: transactionData });
     })
     .catch(error => {
       console.error("Error saving transaction to Firestore:", error);
+      // Send an error response back to the client if saving fails.
+      // Use status 500 for internal server errors.
       res.status(500).json({ message: 'An error occurred while processing the transaction.', error: error.message });
     });
-  */
-
-  // For demonstration purposes, we'll just send a success message.
-  // If you uncomment and use the Firebase logic above, remember to adjust or remove this line.
-  res.json({ message: 'Transaction received successfully!', data: transactionData });
 });
 
 // Start the server and listen for incoming requests on the specified port.
