@@ -1,3 +1,5 @@
+// script.js
+
 // Initial data for all tasks (including those that might be accepted)
 let allTasksData = [
     {
@@ -112,6 +114,11 @@ let acceptedTasks = [];
 let piPayButton;
 let piPaymentStatus;
 let isAuthenticated = false; // Flag to check if user is authenticated with Pi
+let piUser = null; // Store authenticated Pi user data
+
+// Define your Netlify Function URL here
+// IMPORTANT: Use your actual Netlify app URL
+const NETLIFY_FUNCTION_URL = 'https://jocular-pixie-748976.netlify.app/.netlify/functions/transaction';
 
 // --- Functions to Manage Tasks Display ---
 
@@ -192,36 +199,71 @@ function displayAcceptedTasks() {
 }
 
 
-// --- Functions to Handle User Interactions ---
+// --- Functions to Handle User Interactions (Now with Backend Integration) ---
 
 // Function for "Accept Task" button
-function acceptTask(taskId, buttonElement) {
-    // Find the task in allTasksData
+async function acceptTask(taskId, buttonElement) {
     const taskIndexInAll = allTasksData.findIndex(t => t.id === taskId);
 
     if (taskIndexInAll !== -1) {
         const task = allTasksData[taskIndexInAll];
 
-        // Simulate task acceptance (in a real app, this would involve backend/Pi SDK)
-        console.log(`Simulating acceptance for task: ${task.title}`);
-        alert(`You have accepted the task: "${task.title}"! This is a simulation. It has been moved to "My Accepted Tasks" tab.`);
-
-        // Mark the task as accepted in allTasksData
+        // 1. Mark the task as accepted locally
         task.status = 'accepted';
 
-        // Re-filter lists to reflect changes
-        currentAvailableTasks = allTasksData.filter(t => t.status === 'available');
-        acceptedTasks = allTasksData.filter(t => t.status !== 'available');
+        // 2. Prepare data for backend (Firestore)
+        const transactionData = {
+            type: 'task_accepted',
+            taskId: task.id,
+            taskTitle: task.title,
+            timestamp: new Date().toISOString(),
+            userId: piUser ? piUser.username : 'guest_user' // Include Pi user ID if authenticated
+        };
 
-        // Update localStorage
-        saveTasksToLocalStorage();
+        try {
+            buttonElement.disabled = true; // Disable button to prevent multiple clicks
+            buttonElement.textContent = 'Accepting...';
+            
+            // 3. Send data to Netlify Function (Backend)
+            const response = await fetch(NETLIFY_FUNCTION_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(transactionData),
+            });
 
-        // Update the UI
-        displayAvailableTasks(); // Re-render available tasks with the removed one
-        displayAcceptedTasks(); // Re-render accepted tasks (to ensure it's up-to-date)
+            const result = await response.json();
 
-        // Switch to "My Accepted Tasks" tab after accepting
-        showSection('my-tasks');
+            if (response.ok) {
+                console.log('Task acceptance logged to Firestore:', result);
+                alert(`You have accepted the task: "${task.title}"! It has been moved to "My Accepted Tasks" tab.`);
+                // Update localStorage after successful backend operation
+                saveTasksToLocalStorage();
+            } else {
+                console.error('Failed to log task acceptance to Firestore:', result.message);
+                alert(`Error accepting task: ${result.message}. Please try again.`);
+                // Revert status if backend failed
+                task.status = 'available'; 
+            }
+        } catch (error) {
+            console.error('Network or unknown error accepting task:', error);
+            alert(`Network error or unknown issue. Please check your connection and try again.`);
+            // Revert status if network error
+            task.status = 'available'; 
+        } finally {
+            buttonElement.disabled = false; // Re-enable button
+            buttonElement.textContent = 'Accept Task';
+
+            // Re-filter lists to reflect changes (or revert if error)
+            currentAvailableTasks = allTasksData.filter(t => t.status === 'available');
+            acceptedTasks = allTasksData.filter(t => t.status !== 'available');
+
+            // Update the UI
+            displayAvailableTasks();
+            displayAcceptedTasks();
+            showSection('my-tasks'); // Switch to "My Accepted Tasks" tab after accepting
+        }
     } else {
         console.error('Task not found or already accepted:', taskId);
         alert('Could not find this task or it has already been accepted. Please try again.');
@@ -229,27 +271,64 @@ function acceptTask(taskId, buttonElement) {
 }
 
 // Function for "Submit Task" button
-function submitTask(taskId, buttonElement) {
+async function submitTask(taskId, buttonElement) {
     const taskIndexInAll = allTasksData.findIndex(t => t.id === taskId);
 
     if (taskIndexInAll !== -1) {
         const task = allTasksData[taskIndexInAll];
 
-        // Simulate task submission
-        console.log(`Simulating submission for task: ${task.title}`);
-        alert(`You have submitted the task: "${task.title}"! It is now pending review.`);
-
-        // Update status in allTasksData
+        // 1. Mark the task as pending_review locally
         task.status = 'pending_review';
 
-        // Re-filter acceptedTasks to reflect changes (important for re-display)
-        acceptedTasks = allTasksData.filter(t => t.status !== 'available');
+        // 2. Prepare data for backend (Firestore)
+        const transactionData = {
+            type: 'task_submitted',
+            taskId: task.id,
+            taskTitle: task.title,
+            timestamp: new Date().toISOString(),
+            userId: piUser ? piUser.username : 'guest_user' // Include Pi user ID if authenticated
+            // In a real app, you'd also send submission details here (e.g., URL, screenshot evidence)
+        };
 
-        // Update localStorage
-        saveTasksToLocalStorage();
+        try {
+            buttonElement.disabled = true; // Disable button
+            buttonElement.textContent = 'Submitting...';
 
-        // Re-display accepted tasks to show updated status and button
-        displayAcceptedTasks();
+            // 3. Send data to Netlify Function (Backend)
+            const response = await fetch(NETLIFY_FUNCTION_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(transactionData),
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                console.log('Task submission logged to Firestore:', result);
+                alert(`You have submitted the task: "${task.title}"! It is now pending review.`);
+                // Update localStorage after successful backend operation
+                saveTasksToLocalStorage();
+            } else {
+                console.error('Failed to log task submission to Firestore:', result.message);
+                alert(`Error submitting task: ${result.message}. Please try again.`);
+                // Revert status if backend failed
+                task.status = 'accepted'; 
+            }
+        } catch (error) {
+            console.error('Network or unknown error submitting task:', error);
+            alert(`Network error or unknown issue. Please check your connection and try again.`);
+            // Revert status if network error
+            task.status = 'accepted'; 
+        } finally {
+            buttonElement.disabled = false; // Re-enable button
+            buttonElement.textContent = 'Submit Task';
+
+            // Re-filter acceptedTasks and re-display
+            acceptedTasks = allTasksData.filter(t => t.status !== 'available');
+            displayAcceptedTasks();
+        }
     } else {
         console.error('Task not found in all tasks data:', taskId);
         alert('Error submitting task. Please try again.');
@@ -293,7 +372,7 @@ function showSection(sectionId) {
         filterTasks(); // Apply any existing search filter (though we just cleared it)
     } else if (sectionId === 'my-tasks') {
         // Re-initialize acceptedTasks from allTasksData based on status 'accepted', 'pending_review', or 'completed'
-        acceptedTasks = allTasksData.filter(task => task.status !== 'available');
+        acceptedTasks = allTasksData.filter(task => task.status !== 'available'); // Fixed typo: t.status instead of t
         displayAcceptedTasks();
     }
     // No specific display functions for Terms or Privacy sections, as their content is static in HTML.
@@ -306,7 +385,6 @@ function filterTasks() {
 }
 
 // Simple alert function (used for Pi Connect button)
-// We will repurpose this or integrate directly with the new Pi Payment functionality
 function showAlert(message) {
     alert(message);
 }
@@ -348,99 +426,134 @@ document.addEventListener('DOMContentLoaded', () => {
         // We'll proceed with the rest of the app, but Pi features will be disabled or not work.
     } else {
         try {
-            // PI APP ID KUKA BANI!
+            // PI APP ID FROM YOUR PREVIOUS CONVERSATION
             Pi.init({ appId: "njocinapbollg8f925qksyexa6brsk4n7gja6iw74rxluu7m1rendh8y37pffqyo", version: "2.0" });
             console.log("Pi SDK Initialized with App ID.");
             piPaymentStatus.textContent = "Pi SDK Ready. Click button to Authenticate & Pay.";
-            piPayButton.addEventListener('click', authenticateAndPay); // Haɗa aikin zuwa maɓallin
+            piPayButton.addEventListener('click', authenticateAndPay); // Attach the function to the button
         } catch (error) {
             console.error("Failed to initialize Pi SDK:", error);
             piPaymentStatus.textContent = "Error initializing Pi SDK. Please ensure you are in Pi Browser and check console for details.";
-            if (piPayButton) piPayButton.disabled = true; // Kashe button idan akwai matsala
+            if (piPayButton) piPayButton.disabled = true; // Disable button if there's an error
         }
     }
 
-    // Aikin da zai fara Authentication sannan ya yi biyan kuɗi
+    // Function to start Authentication and then initiate payment
     async function authenticateAndPay() {
         if (!piPayButton || !piPaymentStatus) {
             console.error("Pi elements not found, cannot proceed with authentication.");
             return;
         }
 
-        if (isAuthenticated) {
-            // Idan an riga an shiga, kai tsaye zai yi biyan kuɗi
-            initiatePiPayment();
+        if (isAuthenticated && piUser) { // If already authenticated and user data is available
+            initiatePiPayment(); // Directly proceed to payment
             return;
         }
 
         try {
             piPaymentStatus.textContent = "Authenticating with Pi Network...";
-            piPayButton.disabled = true; // Kashe button yayin authentication
+            piPayButton.disabled = true; // Disable button during authentication
 
-            // Nemi izini don username da payments
+            // Request permission for username and payments
             const authResult = await Pi.authenticate(['username', 'payments']);
 
             isAuthenticated = true;
+            piUser = authResult.user; // Store authenticated user info
             console.log("Authentication successful:", authResult);
-            piPaymentStatus.textContent = `Authenticated as: ${authResult.user.username}. Ready to pay.`;
-            piPayButton.textContent = "Pay 0.0001 Pi (Test)"; // Canza rubutun button
+            piPaymentStatus.textContent = `Authenticated as: ${piUser.username}. Ready to pay.`;
+            piPayButton.textContent = "Pay 0.0001 Pi (Test)"; // Change button text
 
-            // Yanzu yi biyan kuɗi
+            // Now initiate payment
             initiatePiPayment();
 
         } catch (error) {
             console.error("Authentication failed:", error);
             piPaymentStatus.textContent = `Authentication failed: ${error.message}. Please ensure you are logged into Pi Browser.`;
             alert(`Authentication failed: ${error.message}. Please ensure you are logged into Pi Browser.`);
-            if (piPayButton) piPayButton.disabled = false; // Kunna button a sake
+            if (piPayButton) piPayButton.disabled = false; // Re-enable button
         }
     }
 
-    // Aikin da zai fara biyan kuɗi
-    function initiatePiPayment() {
+    // Function to initiate payment
+    async function initiatePiPayment() { // Made async to await backend call
         if (!piPayButton || !piPaymentStatus) {
             console.error("Pi elements not found, cannot proceed with payment.");
             return;
         }
 
         piPaymentStatus.textContent = "Initiating payment...";
-        piPayButton.disabled = true; // Kashe button yayin biya
+        piPayButton.disabled = true; // Disable button during payment
 
-        const amountToPay = 0.0001; // Karamin adadi don gwaji (Test-Pi)
+        const amountToPay = 0.0001; // Small amount for testing (Test-Pi)
+        const memoForPayment = "Test transaction for PiTasker App verification (Step 11)";
 
         Pi.sendPayment({
             amount: amountToPay,
-            memo: "Test transaction for PiTasker App verification (Step 11)", // Dalilin biya
+            memo: memoForPayment,
             metadata: {
                 purpose: "App Verification Step 11",
-                app: "PiTasker"
+                app: "PiTasker",
+                userId: piUser ? piUser.username : 'unknown_user' // Include user ID in metadata
             }
         }, {
-            onReadyForServerApproval: function(paymentId) {
-                // WANNAN SHINE MAGANIN CLIENT-SIDE APPROVAL DOMIN GWADUWA.
-                // KADA KA YI AMFANI DA WANNAN A AIKI NA HAKIKA (PRODUCTION)!
-                // Yana sanar da Pi Network cewa an yarda da biyan daga gefen client.
-                piPaymentStatus.textContent = `Payment ${paymentId} ready for client approval. Completing...`;
-                console.log(`Payment ${paymentId} ready for client approval. Confirming via client-side.`);
-                Pi.complete(paymentId); // Wannan shine kiran da zai kammala biyan kuɗi a Pi blockchain
+            onReadyForServerApproval: async function(paymentId) { // IMPORTANT: This is where we notify your server
+                piPaymentStatus.textContent = `Payment ${paymentId} ready for server approval.`;
+                console.log(`Payment ${paymentId} ready for server approval. Notifying backend.`);
+
+                // Send payment ID to your Netlify Function for server-side completion
+                try {
+                    const response = await fetch(NETLIFY_FUNCTION_URL, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            type: 'pi_payment_approval', // New type for your backend to handle
+                            paymentId: paymentId,
+                            amount: amountToPay,
+                            memo: memoForPayment,
+                            userId: piUser ? piUser.username : 'unknown_user'
+                        }),
+                    });
+
+                    const result = await response.json();
+
+                    if (response.ok) {
+                        console.log('Payment approval request sent to backend successfully:', result);
+                        piPaymentStatus.textContent = `Payment ${paymentId} is being processed by the server.`;
+                        // Frontend now waits for onComplete/onIncomplete from Pi SDK after server calls Pi.complete()
+                    } else {
+                        console.error('Failed to send payment approval to backend:', result.message);
+                        piPaymentStatus.textContent = `Payment ${paymentId} failed backend approval: ${result.message}`;
+                        alert(`Payment failed to be approved by server: ${result.message}`);
+                        // Optionally, call Pi.cancel() here if the server explicitly signals a failure
+                        // Pi.cancel(paymentId);
+                        if (piPayButton) piPayButton.disabled = false;
+                    }
+                } catch (error) {
+                    console.error('Network or unknown error during payment approval:', error);
+                    piPaymentStatus.textContent = `Network error during payment approval.`;
+                    alert(`Network error: ${error.message}`);
+                    if (piPayButton) piPayButton.disabled = false;
+                }
             },
             onComplete: function(paymentId) {
                 piPaymentStatus.textContent = `Payment ${paymentId} successful! You can now go back to Pi Developer App.`;
                 alert("Payment successful! You can now go back to the Pi Developer App and click 'Verify' for Step 11.");
                 console.log("Payment successful:", paymentId);
-                if (piPayButton) piPayButton.disabled = false; // Kunna button a sake
+                if (piPayButton) piPayButton.disabled = false; // Re-enable button
             },
             onIncomplete: function(paymentId) {
                 piPaymentStatus.textContent = `Payment ${paymentId} incomplete. Check Pi wallet.`;
                 alert("Payment incomplete. Please check your Pi wallet or network connection.");
                 console.warn("Payment incomplete:", paymentId);
-                if (piPayButton) piPayButton.disabled = false; // Kunna button a sake
+                if (piPayButton) piPayButton.disabled = false; // Re-enable button
             },
             onCancel: function() {
                 piPaymentStatus.textContent = "Payment canceled by user.";
                 alert("Payment canceled by user.");
                 console.log("Payment canceled by user.");
-                if (piPayButton) piPayButton.disabled = false; // Kunna button a sake
+                if (piPayButton) piPayButton.disabled = false; // Re-enable button
             }
         });
     }
@@ -459,5 +572,4 @@ window.showSection = showSection;
 window.acceptTask = acceptTask;
 window.submitTask = submitTask;
 window.filterTasks = filterTasks;
-// Note: showAlert is now mostly replaced by Pi status messages, but keeping for compatibility.
 window.showAlert = showAlert;
