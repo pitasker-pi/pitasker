@@ -1,8 +1,21 @@
-json
-   {
-     "name": "your-project-name",
-     "version": "1.0.0",
-     "dependencies": {
-       "firebase-admin": "^11.0.0"
-     }
-   }
+{
+  "name": "your-netlify-api-project",
+  "version": "1.0.0",
+  "description": "A Netlify function for handling transactions with Firestore.",
+  "main": "netlify/functions/transaction.js",
+  "scripts": {
+    "start": "netlify dev"
+  },
+  "keywords": [
+    "netlify",
+    "serverless",
+    "firebase",
+    "firestore"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "firebase-admin": "^11.0.0"
+  }
+
+}
