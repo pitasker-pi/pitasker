@@ -1,5 +1,4 @@
 // script.js
-
 // Initial data for all tasks (including those that might be accepted)
 let allTasksData = [
     {
